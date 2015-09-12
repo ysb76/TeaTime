@@ -25,7 +25,9 @@ shinyUI(pageWithSidebar(
         mainPanel(
                 
                 tabsetPanel(
-                        tabPanel("Available Data", htmlOutput("gvis")),
+                        tabPanel("Available Data", htmlOutput("gvisCount")),
+                        tabPanel("Population", htmlOutput("gvisPopn")),
+                        tabPanel("Motion Chart", htmlOutput("gvisMotion")),
                         tabPanel("Plot", plotOutput("hivplot")),
                         tabPanel("Table", 
                                  h3("Reported HIV prevalence by Year"),
