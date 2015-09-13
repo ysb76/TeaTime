@@ -155,12 +155,37 @@ MDGf = MDGp[,c(7, 3, 1, 10, 2, 4, 6, 8:9, 12)]
 names(MDGf)[names(MDGf)=="Country.x"] = "Country"
 
 
+#GET FINANCIAL DATA from http://data.worldbank.org/indicator/SH.XPD.TOTL.ZS (total health expenditore, % of GDP)
+#Alternate data is available at http://apps.who.int/gho/data/node.main.78?lang=en but only includes 2000, 2012, and 2013
+healthexp <- read.csv("~/Documents/Research/Software/R/Example Projects/Bryna/UN2015/Data/WorldBank_healthexpGDP.csv",
+                 stringsAsFactors=FALSE)
+years = paste("X", seq(2000, 2013), sep="")
+#hexpwide = healthexp[,c("Country.exp", "Series.exp", years)]
+names(healthexp)[3:16] = gsub("X", "", names(healthexp)[3:16])
+#hexpwide$Obs = rownames(hexpwide)
+#Reshape to Country, Series, Year (from wide to long)
+healthexp$Obs = rownames(healthexp)
+hexplong = reshape(healthexp, varying=c(3:16), direction="long", idvar="Obs",
+                  times=2000:2013, timevar="Year", v.name="HealthExpenditure")
+#Merge with MDGf
+MDGff = merge(MDGf, hexplong, by=c("Country", "Year"), all.x=TRUE)
+#Convert to long format (Series, Series.exp will be a single column var SeriesName), (Value.x, Value.y will be a single column var Value)
+#names(MDGff)[names(MDGff)=="Series"] = "Series1"
+#names(MDGff)[names(MDGff)=="Series.exp"] = "Series2"
+#names(MDGff)[names(MDGff)=="Value.x"] = "Value1"
+#names(MDGff)[names(MDGff)=="Value.y"] = "Value2"
+#MDGff$Obs = rownames(MDGff)
+#MDGff = MDGff[,c("Obs", "Country", "Year", "Region", "Series1", "Series2", "Value1", "Value2", "Population")]
+#with finance and popn data
+#MDGfp = reshape(MDGff, varying=c("Series1", "Series2", "Value1", "Value2"), timevar="Series", idvar="Obs", direction="long", sep="")
+
 
 #RESHAPE so that Series and SeriesCode are columns - this wil work well with gvisMotionChart
-MDGfw = dcast(MDGf, CountryCode + Country + Region + Year + Population ~ Series + SeriesCode, value.var="Value")  #reshape2
+MDGfw = dcast(MDGff, CountryCode + Country + Region + Year + Population + HealthExpenditure ~ Series + SeriesCode, value.var="Value")  #reshape2
+MDGfw = MDGfw[,c(1:6, 13, 9, 17, 16, 18, 10, 11, 12, 14, 15, 7, 8)]
 orign = names(MDGfw)
-names(MDGfw) = c("CountryCode", "Country", "Region", "Year", "Population", 
-                 paste("Var", 1:12, ": ", substr(orign[6:17], 1, 25), sep=""))
+names(MDGfw) = c("CountryCode", "Country", "Region", "Year", "Population", "HealthExpenditure",
+                 paste("Var", 1:12, ": ", substr(orign[7:18], 1, 60), sep=""))
 
 #TRYING gvisMotion Chart but problem
 ##TEST
